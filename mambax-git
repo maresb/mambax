@@ -1,0 +1,15 @@
+#!/bin/bash -euo pipefail
+
+script_dir="$(dirname "${BASH_SOURCE[0]}")"
+micromamba_binary="$script_dir/micromamba"
+env_dir="$script_dir/env"
+if ! [ -e "$micromamba_binary" ]; then
+  t=$(mktemp -d)
+  curl -Ls https://micro.mamba.pm/api/micromamba/osx-arm64/latest | tar -C $t -xj bin/micromamba
+  mv $t/bin/micromamba .
+  rm -rf $t
+fi
+if ! [ -e "$env_dir" ]; then
+  ./micromamba create -p "$env_dir" -f "$script_dir/environment.yml" -y
+fi
+exec ./micromamba -p "$env_dir" run git "$@"
